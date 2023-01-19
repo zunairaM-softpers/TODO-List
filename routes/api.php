@@ -32,7 +32,7 @@ Route::get('login', function() {
     ]);
 })->name('login');
 
-Route::post('login', [UserController::class, 'login']);
+Route::post('login', [UserController::class, 'login'])->middleware('verified');
 
 Route::middleware('auth:sanctum')->group(function() {
     Route::post('logout', [UserController::class, 'logout']);

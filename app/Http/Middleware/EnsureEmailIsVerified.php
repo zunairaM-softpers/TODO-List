@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Redirect;
@@ -19,9 +20,10 @@ class EnsureEmailIsVerified
      */
     public function handle($request, Closure $next, $redirectToRoute = null)
     {
-        if (! $request->user() ||
-            ($request->user() instanceof MustVerifyEmail &&
-            ! $request->user()->hasVerifiedEmail())) {
+        $user = User::where('email', $request->email)->first();
+        if (! $user ||
+            ($user instanceof MustVerifyEmail &&
+            ! $user->hasVerifiedEmail())) {
             return response()->json([
                 "message" => 'Your email address is not verified.',
             ], 403);
