@@ -7,6 +7,7 @@ use App\Models\User as ModelsUser;
 use App\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class UserController extends Controller
 {
@@ -34,25 +35,37 @@ class UserController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|string|email|exists:users,email'
+            'email' => 'required|string|email|exists:users,email',
+            'password' => 'required|string'
         ]);
 
-        $user = ModelsUser::where('email', $request->email)->first();
+        $user = $this->validateUser($request);
+
+        if (is_null($user)) {
+            return response()->json([
+                "Authentication failed"
+            ], 403);
+        }
 
         $token = $this->generateToken($user);
 
-        return ['token' => $token->plainTextToken];
+        return ['token' => $token];
+    }
+
+    public function validateUser($request)
+    {
+        return ModelsUser::where('email', $request->email)->where('password', $request->password)->first();
     }
 
     public function generateToken($user)
     {
         // Generating access token for registered users once login is successful
-        return $user->createToken("access-token");
+        return JWTAuth::fromUser($user);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
+        JWTAuth::parseToken()->invalidate(true);
         return response()->json([
             "message" => "Logged out successfully."
         ]);

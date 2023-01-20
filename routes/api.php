@@ -34,7 +34,7 @@ Route::get('login', function() {
 
 Route::post('login', [UserController::class, 'login'])->middleware('verified');
 
-Route::middleware('auth:sanctum')->group(function() {
+Route::middleware(['jwt.verify'])->group(function() {
     Route::post('logout', [UserController::class, 'logout']);
     Route::apiResource('todos', TODOController::class)->except(['edit', 'create']);
     Route::get('filter/{title}', [TODOController::class, 'filter']);
